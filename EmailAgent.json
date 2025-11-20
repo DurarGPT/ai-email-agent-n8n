@@ -1,0 +1,162 @@
+{
+  "name": "EmailAgent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8ea7d387-c236-4c2b-bd30-42d00932f9c7",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1St8SplirTRnqSxUNYHlG_cyICbDyzVeSzMjvDUczSaw",
+          "mode": "list",
+          "cachedResultName": "EmailAgent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1St8SplirTRnqSxUNYHlG_cyICbDyzVeSzMjvDUczSaw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1St8SplirTRnqSxUNYHlG_cyICbDyzVeSzMjvDUczSaw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "fe37dd64-dc3a-4a87-96ca-937a20f9e89b",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wPQF0zLFUII7HG61",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are an AI email-writing assistant.\n\nACTION: {{$json[\"action\"]}}\nCONTENT: {{$json[\"content\"]}}\nRECIPIENT_NAME: {{$json[\"name\"]}}\n\nWrite the email using the following STRICT RULES:\n\n1. Greeting must be:\nDear {{$json[\"name\"]}}, \n\n2. Each paragraph must be one continuous line (no wrapping, no line breaks inside a sentence).\n\n3. When a paragraph ends, insert two HTML line breaks: <br><br>\n\n4. DO NOT use \\n or \\n\\n anywhere.\n\n5. NEVER split sentences across lines.\n\n6. No lists, no markdown, no code blocks.\n\n7. Always end with:\nKind regards,<br>\nDurarGPT\n\n8. Output the email body as HTML (not plain text).\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "117034d9-64f0-405f-9751-8cd61620d437",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "V5K5hPrgUcii1eSw",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$node[\"Get row(s) in sheet\"].json[\"recipient\"]}}\n",
+        "subject": "={{$node[\"Get row(s) in sheet\"].json[\"subject\"]}}\n",
+        "message": "={{$node[\"Message a model\"].json.output[0].content[0].text}}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        0
+      ],
+      "id": "72d85c4d-7be5-4f62-98d9-fc2b1ddc22d6",
+      "name": "Send a message",
+      "webhookId": "dfd38e1d-7cbe-4062-95dc-77c407a9e9b1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "c185hGdXZvakMY7R",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0d3dc478-9ccc-467a-8145-5c59014237bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb4e9b46422fa152f61dd18881aece46c46efd5a9381f56b615fc230f42383a5"
+  },
+  "id": "GARqtPFLS5Go6AiV",
+  "tags": []
+}
