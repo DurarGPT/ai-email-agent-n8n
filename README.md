@@ -55,5 +55,3 @@ and sends them automatically through Gmail.
 - Inbox reply automation
 
 ---
-
-Feel free to fork, clone, or extend this project!
